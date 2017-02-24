@@ -61,7 +61,7 @@ func main() {
 
 	    	server := &http.Server{
 			Addr: ":443",
-			handler: mux,
+			Handler: mux,
     	                TLSConfig: &tls.Config{
         			GetCertificate: certManager.GetCertificate,
     	                },
