@@ -1,8 +1,8 @@
 package main
 
 import (
-    	"crypto/tls"
-	"golang.org/x/crypto/acme/autocert"
+    	//"crypto/tls"
+	//"golang.org/x/crypto/acme/autocert"
 	"flag"
 	"net/http"
 	"io/ioutil"
@@ -43,7 +43,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    	prod := flag.Bool("prod", false, "run in production mode")
+    	//prod := flag.Bool("prod", false, "run in production mode")
+    	port := flag.String("port", "8080", "specify port")
     	flag.Parse()
   	
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(path + "/static")))
@@ -52,27 +53,10 @@ func main() {
 	mux.Handle("/static/", fs)
 	mux.HandleFunc("/", handler)
 
-	if (*prod) {
-		certManager := autocert.Manager{
-    		        Prompt:     autocert.AcceptTOS,
-    			HostPolicy: autocert.HostWhitelist("www.griffinbyatt.com"),
-    		        Cache:      autocert.DirCache("/certs"),
-		}
-
-	    	server := &http.Server{
-			Addr: ":443",
-			Handler: mux,
-    	                TLSConfig: &tls.Config{
-        			GetCertificate: certManager.GetCertificate,
-    	                },
-	    	}
-
-	        server.ListenAndServeTLS("", "") 
-	} else {
-		server := &http.Server{
-			Addr:    "0.0.0.0:8080",
-			Handler: mux,
-		}
-		server.ListenAndServe()
+	server := &http.Server{
+		Addr:    "0.0.0.0:" + *port,
+		Handler: mux,
 	}
+	server.ListenAndServe()
+	
 }
