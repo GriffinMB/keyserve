@@ -1,6 +1,9 @@
 package main
 
 import (
+    	"crypto/tls"
+	"golang.org/x/crypto/acme/autocert"
+	"flag"
 	"net/http"
 	"io/ioutil"
 	"html/template"
@@ -40,15 +43,36 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    	prod := flag.Bool("prod", false, "run in production mode")
+    	flag.Parse()
+  	
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(path + "/static")))
 	mux := http.NewServeMux()
 
 	mux.Handle("/static/", fs)
 	mux.HandleFunc("/", handler)
 
-	server := &http.Server{
-		Addr:    "0.0.0.0:8080",
-		Handler: mux,
+	if (*prod) {
+		certManager := autocert.Manager{
+    		        Prompt:     autocert.AcceptTOS,
+    			HostPolicy: autocert.HostWhitelist("www.griffinbyatt.com"),
+    		        Cache:      autocert.DirCache("/certs"),
+		}
+
+	    	server := &http.Server{
+			Addr: ":443",
+			handler: mux,
+    	                TLSConfig: &tls.Config{
+        			GetCertificate: certManager.GetCertificate,
+    	                },
+	    	}
+
+	        server.ListenAndServeTLS("", "") 
+	} else {
+		server := &http.Server{
+			Addr:    "0.0.0.0:8080",
+			Handler: mux,
+		}
+		server.ListenAndServe()
 	}
-	server.ListenAndServe()
 }
