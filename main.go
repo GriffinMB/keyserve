@@ -1,16 +1,16 @@
 package main
 
 import (
-    	//"crypto/tls"
-	//"golang.org/x/crypto/acme/autocert"
 	"flag"
+	"fmt"
+	"os"
 	"net/http"
 	"io/ioutil"
 	"html/template"
 	"github.com/russross/blackfriday"
 )
 
-var path string = "/keybase/public/griffinmb/blog"
+var path string
 
 func handler(w http.ResponseWriter, r *http.Request) {
     	reqPath := r.URL.Path
@@ -43,9 +43,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    	//prod := flag.Bool("prod", false, "run in production mode")
     	port := flag.String("port", "8080", "specify port")
+    	uname := flag.String("uname", "", "Keybase username")
     	flag.Parse()
+
+    	if (*uname == "") {
+		fmt.Println("Must specify a Keybase username.")
+		os.Exit(1)
+    	}
+
+    	path = "/keybase/public/" + *uname + "/blog"
   	
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(path + "/static")))
 	mux := http.NewServeMux()
