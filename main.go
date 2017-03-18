@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 	"net/http"
 	"io/ioutil"
 	"html/template"
@@ -12,6 +13,7 @@ import (
 
 var path string
 var cache = make(map[string][]byte)
+var resetTime int64
 
 func findOrCache(reqPath string) (data []byte, err error) {
 	if data, ok := cache[reqPath]; ok {
@@ -60,6 +62,23 @@ func handler(w http.ResponseWriter, r *http.Request) {
     	t.Execute(w, template.HTML(string(output)))
 }
 
+func reset() {
+    	resetPath := path + "/reset.txt"
+	for {
+		info, err := os.Stat(resetPath)
+		if os.IsNotExist(err) {
+    			continue
+		}
+
+		modTime := info.ModTime().Unix()
+		if resetTime == 0 || modTime > resetTime {
+    			resetTime = modTime
+			cache = make(map[string][]byte)
+		}
+		time.Sleep(5 * time.Second)
+	}
+}
+
 func main() {
     	port := flag.String("port", "8080", "specify port")
     	uname := flag.String("uname", "", "Keybase username")
@@ -71,6 +90,8 @@ func main() {
     	}
 
     	path = "/keybase/public/" + *uname + "/blog"
+
+    	go reset()
   	
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(path + "/static")))
 	mux := http.NewServeMux()
