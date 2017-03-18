@@ -11,6 +11,21 @@ import (
 )
 
 var path string
+var cache = make(map[string][]byte)
+
+func findOrCache(reqPath string) (data []byte, err error) {
+	if data, ok := cache[reqPath]; ok {
+		return data, nil
+	}
+
+	data, err = ioutil.ReadFile(path + reqPath + ".md")
+
+	if (err == nil) {
+		cache[reqPath] = data
+	}
+
+	return data, err
+}
 
 func handler(w http.ResponseWriter, r *http.Request) {
     	reqPath := r.URL.Path
@@ -18,8 +33,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if (reqPath == "/") {
 		reqPath = "/index"
 	}
-    	
-    	data, err := ioutil.ReadFile(path + reqPath + ".md")
+  	
+    	//data, err := ioutil.ReadFile(path + reqPath + ".md")
+    	data, err := findOrCache(reqPath)
     	if (err != nil) {
         	http.NotFound(w, r)
         	return
@@ -34,7 +50,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	        <link rel="stylesheet" type="text/css" href="/static/style.css">
 	    </head>
 	    <body>
-	        {{.}}
+	    	<div class="main">
+	            {{.}}
+	        </div>
 	    </body>
 	</html>
     	`
