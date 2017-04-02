@@ -17,7 +17,7 @@ To install:
 
 To run:
 
-`keyserve -uname=<username>`
+`keyserve -uname=griffinmb -title="Griffin's Blog"`
 
 To clear cache and reset css cache breaker:
 
