@@ -13,6 +13,7 @@ import (
 )
 
 var path string
+var title *string
 var cache = make(map[string][]byte)
 var resetTime int64
 var cacheBust int
@@ -21,6 +22,7 @@ var tpl string
 type TemplateData struct {
 	Data      template.HTML
 	CacheBust int
+	Title string
 }
 
 func findOrCache(reqPath string) (data []byte, err error) {
@@ -50,7 +52,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	output := blackfriday.MarkdownBasic(data)
-	tplData := TemplateData{Data: template.HTML(string(output)), CacheBust: cacheBust}
+	tplData := TemplateData{Data: template.HTML(string(output)), CacheBust: cacheBust, Title: *title}
 	t, err := template.New("layout").Parse(tpl)
 	t.Execute(w, tplData)
 }
@@ -75,8 +77,9 @@ func reset() {
 }
 
 func main() {
-	port := flag.String("port", "8080", "specify port")
+	port := flag.String("port", "8080", "port")
 	uname := flag.String("uname", "", "Keybase username")
+	title = flag.String("title", "My Blog", "blog title")
 	flag.Parse()
 
 	if *uname == "" {
@@ -93,7 +96,7 @@ func main() {
 	<html>
 	    <head>
 	        <meta charset="UTF-8">
-	        <title>Griffin's Blog</title>
+	        <title>{{.Title}}</title>
 	        <link rel="stylesheet" type="text/css" href="/static/style.css?{{.CacheBust}}">
 	    </head>
 	    <body>
