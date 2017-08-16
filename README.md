@@ -17,7 +17,10 @@ To install:
 
 To run:
 
-`keyserve -uname=griffinmb -title="Griffin's Blog"`
+```
+$ keyserve -uname=griffinmb -title="Griffin's Blog" &
+$ disown %1
+```
 
 To clear cache and reset css cache breaker:
 
