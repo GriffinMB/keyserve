@@ -25,3 +25,11 @@ $ disown %1
 To clear cache and reset css cache breaker:
 
 `touch blog/reset.txt`
+
+Debugging note:
+
+If you are having problems getting Keybase to start on Ubuntu, you may need to create the following file:
+
+```
+$ touch /home/<user>/.cache/keybase/keybase.kbfs.log
+```
